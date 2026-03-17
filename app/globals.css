@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -45,75 +46,119 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Custom financial tokens exposed to Tailwind ── */
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
 }
 
+/* ─────────────────────────────────────────
+   ROOT — Dark luxury financial theme
+───────────────────────────────────────── */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* Core */
+  --background: #0A0A0B;
+  --foreground: #F0EDE8;
+
+  /* Cards & Popovers */
+  --card: #111113;
+  --card-foreground: #F0EDE8;
+  --popover: #111113;
+  --popover-foreground: #F0EDE8;
+
+  /* Primary — Gold */
+  --primary: #C9A84C;
+  --primary-foreground: #0A0A0B;
+
+  /* Secondary — Surface */
+  --secondary: #1A1A1E;
+  --secondary-foreground: #F0EDE8;
+
+  /* Muted */
+  --muted: #1A1A1E;
+  --muted-foreground: #9E9B95;
+
+  /* Accent — Gold tint */
+  --accent: #C9A84C20;
+  --accent-foreground: #C9A84C;
+
+  /* Destructive */
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
+
+  /* Borders & Inputs */
+  --border: #2A2A2E;
+  --input: #1A1A1E;
+  --ring: #C9A84C60;
+
+  /* Radius */
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Charts — gold to muted tones */
+  --chart-1: #C9A84C;
+  --chart-2: #E8C97A;
+  --chart-3: #9E8240;
+  --chart-4: #6B5A2E;
+  --chart-5: #3D3420;
+
+  /* Sidebar */
+  --sidebar: #111113;
+  --sidebar-foreground: #F0EDE8;
+  --sidebar-primary: #C9A84C;
+  --sidebar-primary-foreground: #0A0A0B;
+  --sidebar-accent: #1A1A1E;
+  --sidebar-accent-foreground: #F0EDE8;
+  --sidebar-border: #2A2A2E;
+  --sidebar-ring: #C9A84C60;
+
+  /* Custom financial tokens */
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --surface: #111113;
+  --surface-elevated: #1A1A1E;
+
+  /* Fonts */
+  --font-sans: 'DM Sans', sans-serif;
+  --font-serif: 'Instrument Serif', serif;
 }
 
+/* ─────────────────────────────────────────
+   DARK — Same as root (already dark)
+   Keep this in case shadcn toggles .dark
+───────────────────────────────────────── */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #0A0A0B;
+  --foreground: #F0EDE8;
+  --card: #111113;
+  --card-foreground: #F0EDE8;
+  --popover: #111113;
+  --popover-foreground: #F0EDE8;
+  --primary: #C9A84C;
+  --primary-foreground: #0A0A0B;
+  --secondary: #1A1A1E;
+  --secondary-foreground: #F0EDE8;
+  --muted: #1A1A1E;
+  --muted-foreground: #9E9B95;
+  --accent: #C9A84C20;
+  --accent-foreground: #C9A84C;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: #2A2A2E;
+  --input: #1A1A1E;
+  --ring: #C9A84C60;
+  --chart-1: #C9A84C;
+  --chart-2: #E8C97A;
+  --chart-3: #9E8240;
+  --chart-4: #6B5A2E;
+  --chart-5: #3D3420;
+  --sidebar: #111113;
+  --sidebar-foreground: #F0EDE8;
+  --sidebar-primary: #C9A84C;
+  --sidebar-primary-foreground: #0A0A0B;
+  --sidebar-accent: #1A1A1E;
+  --sidebar-accent-foreground: #F0EDE8;
+  --sidebar-border: #2A2A2E;
+  --sidebar-ring: #C9A84C60;
 }
 
 @layer base {
@@ -121,9 +166,62 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-serif;
+
   }
-  html {
-    @apply font-sans;
-  }
+}
+
+
+
+
+
+
+/* ─────────────────────────────────────────────────
+   PREMIUM CUSTOM SCROLLBAR — Add to globals.css
+───────────────────────────────────────────────── */
+
+/* WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0B;
+  border-left: 1px solid #111113;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(201, 168, 76, 0.0) 0%,
+    rgba(201, 168, 76, 0.5) 30%,
+    rgba(201, 168, 76, 0.7) 50%,
+    rgba(201, 168, 76, 0.5) 70%,
+    rgba(201, 168, 76, 0.0) 100%
+  );
+  border-radius: 99px;
+  border: 1px solid rgba(201, 168, 76, 0.1);
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(201, 168, 76, 0.1) 0%,
+    rgba(201, 168, 76, 0.8) 30%,
+    rgba(201, 168, 76, 1.0) 50%,
+    rgba(201, 168, 76, 0.8) 70%,
+    rgba(201, 168, 76, 0.1) 100%
+  );
+}
+
+::-webkit-scrollbar-corner {
+  background: #0A0A0B;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 168, 76, 0.45) #0A0A0B;
 }
