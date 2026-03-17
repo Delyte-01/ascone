@@ -225,3 +225,27 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(201, 168, 76, 0.45) #0A0A0B;
 }
+
+
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+
+.particle-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 9999px;
+  background: #c9a84c;
+}

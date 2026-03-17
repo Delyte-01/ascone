@@ -1,0 +1,1 @@
+work on the hero gsap premium animation , u can use timeline but just make a good animation later we may tweak somethings and try to animate almost every element and let there be in sync use a good easing power like a smooth buttery feel

@@ -1,28 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getLenis } from "../smooth-scroll";
 
 export function BackToTop() {
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const onScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    const interval = setInterval(() => {
+      const lenis = getLenis();
 
-      setProgress(pct);
-      setVisible(scrollTop > 400);
-    };
+      if (!lenis) return;
+      const handleScroll = (e: { scroll: number; limit: number }) => {
+        const scrollTop = e.scroll;
+        const limit = e.limit;
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+        if (!limit) return;
+
+        const docHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+
+        const pct = (scrollTop / docHeight) * 100;
+
+        setProgress(pct);
+        setVisible(scrollTop > 400);
+      };
+
+      lenis.on("scroll", handleScroll);
+
+      clearInterval(interval);
+
+      return () => {
+        lenis.off("scroll", handleScroll);
+      };
+    }, 100);
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const lenis = getLenis();
+    lenis?.scrollTo(0);
   };
 
   // SVG ring math

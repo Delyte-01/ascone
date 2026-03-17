@@ -1,75 +1,346 @@
 "use client";
 
+import { useRef} from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import { Button } from "@/components/ui/button";
 import { Star, ArrowUpRight, TrendingUp, Shield, Zap } from "lucide-react";
 
 const trustLogos = ["Loom", "HubSpot", "OpenAI", "Raycast", "Zenefits"];
 
+// Helper: animates a number counting up
+function animateCount(el: HTMLElement, target: number, duration: number) {
+  let start = 0;
+  const step = target / (duration * 60);
+  const tick = () => {
+    start = Math.min(start + step, target);
+    el.textContent = Math.floor(start).toLocaleString();
+    if (start < target) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
 export function HeroSection() {
+  const container = useRef<HTMLDivElement>(null);
+  const balCountRef = useRef<HTMLSpanElement>(null);
+  const userCountRef = useRef<HTMLSpanElement>(null);
+
+  useGSAP(
+    () => {
+      // ── Set initial states ──────────────────────────────────────────────
+      gsap.set(".badge", { y: 40, opacity: 0 });
+      gsap.set(".headline .line span", { y: "100%", opacity: 0 });
+      gsap.set(".subtitle", { y: 30, opacity: 0 });
+      gsap.set(".cta-group", { y: 28, opacity: 0 });
+      gsap.set(".stars-row, .pills", { y: 22, opacity: 0 });
+      gsap.set(".dashboard-card", { y: 100, scale: 0.94, opacity: 0 });
+      gsap.set(".app-bar", { y: -20, opacity: 0 });
+      gsap.set(".balance-value", { y: 50, opacity: 0 });
+      gsap.set(".stats-card", { y: 30, opacity: 0 });
+      gsap.set(".transaction-item", { x: -25, opacity: 0 });
+      gsap.set(".floating-pill", { scale: 0.7, y: 20, opacity: 0 });
+      gsap.set(".trust-bar", { y: 40, opacity: 0 });
+      gsap.set(".trust-logos span", { y: 18, opacity: 0 });
+      gsap.set(".glow", { opacity: 0 });
+      gsap.set(".chart-line", { strokeDasharray: 600, strokeDashoffset: 600 });
+      gsap.set(".chart-area", { opacity: 0 });
+      gsap.set(".chart-circle", { opacity: 0 });
+      gsap.set(".chart-pulse", { opacity: 0 });
+
+      // ── Master timeline ──────────────────────────────────────────────────
+      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+      // 1. Glows bloom
+      tl.to(".glow-left", { opacity: 1, duration: 2.5, ease: "power2.out" }, 0)
+        .to(".glow-right", { opacity: 1, duration: 2, ease: "power2.out" }, 0.3)
+        .to(".glow-mid", { opacity: 1, duration: 2, ease: "power2.out" }, 0.5);
+
+      // 2. Badge
+      tl.to(
+        ".badge",
+        { opacity: 1, y: 0, duration: 1, ease: "power3.out" },
+        0.4
+      );
+
+      // 3. Headline — clip-reveal per line
+      tl.to(
+        ".headline .line:nth-child(1) span",
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1.3,
+        },
+        0.55
+      )
+        .to(
+          ".headline .line:nth-child(2) span",
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1.3,
+          },
+          0.68
+        )
+        .to(
+          ".headline .line:nth-child(3) span",
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1.3,
+          },
+          0.81
+        );
+
+      // 4. Subtitle
+      tl.to(".subtitle", { opacity: 1, y: 0, duration: 1.1 }, 1.0);
+
+      // 5. CTAs
+      tl.to(".cta-group", { opacity: 1, y: 0, duration: 1 }, 1.15);
+
+      // 6. Stars + pills
+      tl.to(".stars-row", { opacity: 1, y: 0, duration: 0.9 }, 1.25).to(
+        ".pills",
+        { opacity: 1, y: 0, duration: 0.9 },
+        1.35
+      );
+
+      // 7. Dashboard card
+      tl.to(
+        ".dashboard-card",
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 1.6,
+          ease: "power4.out",
+        },
+        0.7
+      );
+
+      // 8. App bar
+      tl.to(".app-bar", { opacity: 1, y: 0, duration: 0.8 }, 1.1);
+
+      // 9. Balance — count up on enter
+      tl.to(
+        ".balance-value",
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.1,
+          onStart: () => {
+            if (balCountRef.current)
+              animateCount(balCountRef.current, 196420, 1.5);
+          },
+        },
+        1.25
+      );
+
+      // User count in badge
+      tl.call(
+        () => {
+          if (userCountRef.current)
+            animateCount(userCountRef.current, 48000, 1.2);
+        },
+        undefined,
+        0.8
+      );
+
+      // 10. Chart line draw
+      tl.to(
+        ".chart-line",
+        {
+          strokeDashoffset: 0,
+          duration: 1.8,
+          ease: "power3.inOut",
+        },
+        1.4
+      );
+      tl.to(".chart-area", { opacity: 1, duration: 0.8 }, 1.8);
+      tl.to(
+        ".chart-circle",
+        { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(2)" },
+        2.4
+      ).to(".chart-pulse", { opacity: 1, duration: 0.5 }, 2.5);
+
+      // Pulsing dot at chart tip
+      gsap.to(".chart-pulse", {
+        scale: 2.2,
+        opacity: 0,
+        duration: 1.4,
+        ease: "power2.out",
+        repeat: -1,
+        delay: 2.8,
+      });
+
+      // 11. Stats cards
+      tl.to(
+        ".stats-card",
+        { opacity: 1, y: 0, duration: 0.9, stagger: 0.1 },
+        1.7
+      );
+
+      // 12. Transaction items
+      tl.to(
+        ".transaction-item",
+        { opacity: 1, x: 0, duration: 0.9, stagger: 0.13 },
+        1.9
+      );
+
+      // 13. Floating pills bounce
+      tl.to(
+        ".floating-pill",
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 1.1,
+          stagger: 0.2,
+          ease: "back.out(1.6)",
+        },
+        2.2
+      );
+
+      // 14. Trust bar + logos
+      tl.to(".trust-bar", { opacity: 1, y: 0, duration: 1.1 }, 2.3);
+      tl.to(
+        ".trust-logos span",
+        { opacity: 1, y: 0, duration: 0.9, stagger: 0.07 },
+        2.5
+      );
+
+      // ── Idle / ambient animations (start after intro) ───────────────────
+
+      // Glows breathe
+      gsap.to(".glow-left", {
+        scale: 1.08,
+        duration: 4,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        delay: 3,
+      });
+      gsap.to(".glow-right", {
+        scale: 1.12,
+        duration: 5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        delay: 3.5,
+      });
+
+      // Dashboard subtle float
+      gsap.to(".dashboard-card", {
+        y: -6,
+        duration: 4.5,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        delay: 3,
+      });
+
+      // Floating pills float independently
+      gsap.to(".floating-pill:first-child", {
+        y: "-=8",
+        duration: 2.8,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        delay: 3.2,
+      });
+      gsap.to(".floating-pill:last-child", {
+        y: "-=6",
+        duration: 3.2,
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        delay: 3.5,
+      });
+    },
+    { scope: container }
+  );
+
   return (
-    <section className="w-full min-h-screen bg-[#0A0A0B] relative overflow-hidden flex items-center">
+    <section
+      ref={container}
+      className="w-full min-h-screen bg-[#08080A] relative overflow-hidden flex items-center"
+    >
       {/* Grid texture */}
-      <div className="absolute inset-0 opacity-[0.025]" aria-hidden>
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern
-              id="hero-grid"
-              width="72"
-              height="72"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 72 0 L 0 0 0 72"
-                fill="none"
-                stroke="#C9A84C"
-                strokeWidth="0.5"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#hero-grid)" />
-        </svg>
-      </div>
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px), linear-gradient(90deg,rgba(201,168,76,0.04) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+          maskImage:
+            "radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 100%)",
+        }}
+        aria-hidden
+      />
 
       {/* Glows */}
       <div
-        className="absolute -top-60 -left-60 w-[700px] h-[700px] rounded-full bg-[#C9A84C]/6 blur-[160px] pointer-events-none"
+        className="glow glow-left absolute -top-52 -left-52 w-[700px] h-[700px] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%)",
+        }}
         aria-hidden
       />
       <div
-        className="absolute -bottom-40 -right-20 w-[500px] h-[500px] rounded-full bg-[#C9A84C]/4 blur-[120px] pointer-events-none"
+        className="glow glow-right absolute -bottom-40 -right-20 w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%)",
+        }}
+        aria-hidden
+      />
+      <div
+        className="glow glow-mid absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse, rgba(201,168,76,0.05) 0%, transparent 70%)",
+        }}
         aria-hidden
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-28 lg:py-36 w-full">
-        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 xl:gap-20 items-center">
+      {/* ── Main content ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-24 lg:py-32 w-full">
+        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-14 xl:gap-20 items-center">
           {/* LEFT — Copy */}
-          <div className="space-y-10 max-w-xl">
+          <div className="space-y-7 max-w-xl">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2.5 border border-[#C9A84C]/30 rounded-full px-4 py-2 bg-[#C9A84C]/5">
+            <div className="badge inline-flex items-center gap-2.5 border border-[#C9A84C]/30 rounded-full px-4 py-2 bg-[#C9A84C]/5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C] animate-pulse" />
               <p className="text-xs font-sans font-medium text-[#C9A84C] tracking-[0.18em] uppercase">
-                Now Live — Join 48,000+ users
+                Now Live — Join <span ref={userCountRef}>0</span>+ users
               </p>
             </div>
 
-            {/* Headline */}
-            <div className="space-y-5">
-              <h1 className="font-serif text-[3.2rem] md:text-[3.8rem] lg:text-[4.2rem] xl:text-[4.8rem] leading-[1.02] text-[#F0EDE8]">
-                The smarter way
-                <br />
-                to command your
-                <br />
-                <span className="italic text-[#C9A84C]">wealth.</span>
-              </h1>
-              <p className="text-[#9E9B95] text-lg leading-[1.75] font-sans font-light max-w-[380px]">
-                From daily spending to long-term investing — Ascone unifies
-                every financial decision in one intelligent, secure platform.
-              </p>
-            </div>
+            {/* Headline — clip reveal */}
+            <h1
+              className="headline font-serif text-[3rem] md:text-[3.8rem] lg:text-[4.4rem] leading-[1.02] text-[#F0EDE8]"
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            >
+              <span className="line block overflow-hidden">
+                <span className="block">The smarter way</span>
+              </span>
+              <span className="line block overflow-hidden">
+                <span className="block">to command your</span>
+              </span>
+              <span className="line block overflow-hidden">
+                <span className="block italic text-[#C9A84C]">wealth.</span>
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className="subtitle text-[#9E9B95] text-lg leading-[1.8] font-sans font-light max-w-[380px]">
+              From daily spending to long-term investing — Ascone unifies every
+              financial decision in one intelligent, secure platform.
+            </p>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <Button className="bg-[#C9A84C] hover:bg-[#E8C97A] text-[#0A0A0B] font-sans font-semibold rounded-full px-8 py-6 text-base transition-all duration-300 shadow-[0_0_40px_#C9A84C28] hover:shadow-[0_0_50px_#C9A84C45]">
+            <div className="cta-group flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <Button className="bg-[#C9A84C] hover:bg-[#E8C97A] text-[#08080A] font-sans font-semibold rounded-full px-8 py-6 text-base transition-all duration-300 shadow-[0_0_40px_#C9A84C28] hover:shadow-[0_0_60px_#C9A84C45]">
                 Start Free Today
                 <ArrowUpRight className="w-4 h-4 ml-1.5" />
               </Button>
@@ -87,7 +358,7 @@ export function HeroSection() {
             </div>
 
             {/* Stars */}
-            <div className="flex items-center gap-3">
+            <div className="stars-row flex items-center gap-3">
               <div className="flex items-center gap-0.5">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star
@@ -103,7 +374,7 @@ export function HeroSection() {
             </div>
 
             {/* Feature pills */}
-            <div className="flex flex-wrap gap-2">
+            <div className="pills flex flex-wrap gap-2">
               {[
                 {
                   icon: <Shield className="w-3 h-3" />,
@@ -131,15 +402,20 @@ export function HeroSection() {
 
           {/* RIGHT — Dashboard mockup */}
           <div className="relative">
-            {/* Main dashboard card */}
-            <div className="relative bg-[#111113] border border-[#2A2A2E] rounded-3xl p-5 shadow-2xl">
+            <div
+              className="dashboard-card bg-[#111113] border border-[#202024] rounded-3xl p-5 shadow-2xl"
+              style={{
+                boxShadow:
+                  "0 40px 120px rgba(0,0,0,.7), 0 0 0 0.5px rgba(201,168,76,.06)",
+              }}
+            >
               {/* App bar */}
-              <div className="flex items-center justify-between mb-5 pb-4 border-b border-[#1A1A1E]">
+              <div className="app-bar flex items-center justify-between mb-5 pb-4 border-b border-[#1A1A1E]">
                 <div className="flex items-center gap-2.5">
                   <div className="w-6 h-6 rounded-md bg-[#C9A84C] flex items-center justify-center">
                     <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
                       <path
-                        d="M2 12 L7 2 L12 12"
+                        d="M2 12L7 2L12 12"
                         stroke="#0A0A0B"
                         strokeWidth="2.2"
                         strokeLinecap="round"
@@ -153,7 +429,10 @@ export function HeroSection() {
                       />
                     </svg>
                   </div>
-                  <span className="font-serif text-sm text-[#F0EDE8]">
+                  <span
+                    className="font-serif text-sm text-[#F0EDE8]"
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  >
                     Ascone
                   </span>
                 </div>
@@ -171,7 +450,12 @@ export function HeroSection() {
                   Total Portfolio Value
                 </p>
                 <div className="flex items-end gap-3">
-                  <p className="font-serif text-4xl text-[#F0EDE8]">$196,420</p>
+                  <p
+                    className="balance-value font-serif text-4xl text-[#F0EDE8]"
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  >
+                    $<span ref={balCountRef}>0</span>
+                  </p>
                   <div className="flex items-center gap-1 mb-1.5 text-emerald-400">
                     <TrendingUp className="w-3.5 h-3.5" />
                     <span className="text-xs font-sans font-medium">
@@ -183,11 +467,11 @@ export function HeroSection() {
 
               {/* Chart */}
               <div className="mb-5">
-                <div className="h-24 w-full">
+                <div className="relative overflow-hidden">
                   <svg
-                    viewBox="0 0 400 96"
+                    viewBox="0 0 400 88"
                     preserveAspectRatio="none"
-                    className="w-full h-full"
+                    className="w-full h-24"
                   >
                     <defs>
                       <linearGradient
@@ -200,7 +484,7 @@ export function HeroSection() {
                         <stop
                           offset="0%"
                           stopColor="#C9A84C"
-                          stopOpacity="0.22"
+                          stopOpacity="0.2"
                         />
                         <stop
                           offset="100%"
@@ -210,26 +494,44 @@ export function HeroSection() {
                       </linearGradient>
                     </defs>
                     <polygon
-                      points="0,82 40,78 80,80 120,66 160,58 200,50 240,40 280,32 320,22 360,14 400,6 400,96 0,96"
+                      className="chart-area"
+                      points="0,78 40,74 80,76 120,62 160,54 200,46 240,36 280,28 320,18 360,10 400,2 400,88 0,88"
                       fill="url(#heroChartGrad)"
                     />
                     <polyline
-                      points="0,82 40,78 80,80 120,66 160,58 200,50 240,40 280,32 320,22 360,14 400,6"
+                      className="chart-line"
+                      points="0,78 40,74 80,76 120,62 160,54 200,46 240,36 280,28 320,18 360,10 400,2"
                       fill="none"
                       stroke="#C9A84C"
-                      strokeWidth="1.8"
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    <circle cx="400" cy="6" r="3.5" fill="#C9A84C" />
                     <circle
+                      className="chart-circle"
                       cx="400"
-                      cy="6"
+                      cy="2"
+                      r="3.5"
+                      fill="#C9A84C"
+                    />
+                    <circle
+                      className="chart-pulse"
+                      cx="400"
+                      cy="2"
                       r="7"
                       fill="#C9A84C"
                       fillOpacity="0.15"
                     />
                   </svg>
+                  {/* Shimmer sweep */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent, rgba(201,168,76,0.08), transparent)",
+                      animation: "shimmer 3s ease-in-out infinite",
+                    }}
+                  />
                 </div>
                 <div className="flex justify-between mt-1">
                   {["Jan", "Mar", "May", "Jul", "Sep", "Nov"].map((m) => (
@@ -248,7 +550,7 @@ export function HeroSection() {
                 {[
                   {
                     label: "Savings",
-                    value: "$42,000",
+                    value: "$42k",
                     change: "+8.2%",
                     up: true,
                   },
@@ -260,19 +562,24 @@ export function HeroSection() {
                   },
                   {
                     label: "Spending",
-                    value: "$3,240",
+                    value: "$3.2k",
                     change: "-2.1%",
                     up: false,
                   },
                 ].map(({ label, value, change, up }) => (
                   <div
                     key={label}
-                    className="bg-[#0A0A0B] border border-[#2A2A2E] rounded-xl p-3"
+                    className="stats-card bg-[#0A0A0B] border border-[#202024] rounded-xl p-3"
                   >
                     <p className="font-sans text-[9px] text-[#5A5855] uppercase tracking-wider mb-1.5">
                       {label}
                     </p>
-                    <p className="font-serif text-sm text-[#F0EDE8]">{value}</p>
+                    <p
+                      className="font-serif text-sm text-[#F0EDE8]"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      {value}
+                    </p>
                     <p
                       className={`font-sans text-[10px] mt-1 ${
                         up ? "text-emerald-400" : "text-rose-400"
@@ -301,7 +608,7 @@ export function HeroSection() {
                       name: "Rent payment",
                       type: "Bank transfer",
                       amount: "-$850",
-                      color: "#5A5855",
+                      color: "#f87171",
                     },
                     {
                       name: "Q3 Dividend",
@@ -312,10 +619,10 @@ export function HeroSection() {
                   ].map(({ name, type, amount, color }) => (
                     <div
                       key={name}
-                      className="flex items-center justify-between"
+                      className="transaction-item flex items-center justify-between"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-full bg-[#1A1A1E] border border-[#2A2A2E] flex items-center justify-center">
+                        <div className="w-7 h-7 rounded-full bg-[#1A1A1E] border border-[#252528] flex items-center justify-center">
                           <span
                             className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: color }}
@@ -343,22 +650,30 @@ export function HeroSection() {
             </div>
 
             {/* Floating pill — currencies */}
-            <div className="absolute -left-5 top-[30%] bg-[#1A1A1E] border border-[#2A2A2E] rounded-2xl px-4 py-3 shadow-xl hidden lg:block">
+            <div className="floating-pill absolute -left-7 top-[30%] bg-[#1A1A1E] border border-[#252528] rounded-2xl px-4 py-3 shadow-xl hidden lg:block">
               <p className="font-sans text-[9px] text-[#5A5855] uppercase tracking-wider mb-1">
                 Currencies
               </p>
-              <p className="font-serif text-2xl text-[#F0EDE8]">56+</p>
+              <p
+                className="font-serif text-2xl text-[#F0EDE8]"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              >
+                56+
+              </p>
               <p className="font-sans text-[9px] text-[#9E9B95] mt-0.5">
                 Global support
               </p>
             </div>
 
             {/* Floating pill — users */}
-            <div className="absolute -right-4 -bottom-5 bg-[#C9A84C] rounded-2xl px-4 py-3 shadow-xl shadow-[#C9A84C]/20 hidden lg:block">
+            <div className="floating-pill absolute -right-5 -bottom-5 bg-[#C9A84C] rounded-2xl px-4 py-3 shadow-xl shadow-[#C9A84C]/20 hidden lg:block">
               <p className="font-sans text-[9px] text-[#0A0A0B]/60 uppercase tracking-wider mb-1">
                 Active Users
               </p>
-              <p className="font-serif text-xl text-[#0A0A0B] font-medium">
+              <p
+                className="font-serif text-xl text-[#0A0A0B] font-medium"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              >
                 48,200+
               </p>
               <div className="flex -space-x-1.5 mt-2">
@@ -375,15 +690,15 @@ export function HeroSection() {
         </div>
 
         {/* Trust bar */}
-        <div className="mt-20 pt-10 border-t border-[#1A1A1E]">
-          <p className="text-xs text-[#5A5855] font-sans uppercase tracking-[0.22em] mb-7 text-center">
+        <div className="trust-bar mt-20 pt-10 border-t border-[#181818]">
+          <p className="text-xs text-[#3A3A3E] font-sans uppercase tracking-[0.22em] mb-7 text-center">
             Trusted by forward-thinking teams
           </p>
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-4">
+          <div className="trust-logos flex flex-wrap justify-center gap-x-10 gap-y-4">
             {trustLogos.map((name) => (
               <span
                 key={name}
-                className="font-sans font-medium text-[#3A3A3E] hover:text-[#9E9B95] text-base transition-colors duration-200 cursor-default select-none"
+                className="font-sans font-medium text-[#2E2E32] hover:text-[#9E9B95] text-base transition-colors duration-300 cursor-default select-none"
               >
                 {name}
               </span>
@@ -391,6 +706,14 @@ export function HeroSection() {
           </div>
         </div>
       </div>
+
+      {/* Chart shimmer keyframe */}
+      <style>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(400%); }
+        }
+      `}</style>
     </section>
   );
 }

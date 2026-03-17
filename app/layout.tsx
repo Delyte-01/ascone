@@ -4,6 +4,8 @@ import "./globals.css";
 import { Navigation } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { BackToTop } from "@/components/back-to-top";
+import SmoothScrolling from "@/components/smooth-scroll";
+// import { PageLoader } from "@/components/page-loader
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,10 +32,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navigation />
+        <SmoothScrolling>
+          <Navigation />
         {children}
-        <Footer />
-        <BackToTop />
+          <Footer />
+          <BackToTop />
+        </SmoothScrolling>
       </body>
     </html>
   );
