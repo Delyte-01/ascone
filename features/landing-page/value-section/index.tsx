@@ -554,7 +554,8 @@ export function ValuesSection() {
           });
         });
 
-        return () => mm.revert();
+        // return () => mm.revert();
+
       });
 
       // ── MOBILE: lightweight fade-up only ─────────────────────────────
@@ -624,7 +625,7 @@ export function ValuesSection() {
           },
         });
 
-        return () => mm.revert();
+        // return () => mm.revert();
       });
     },
     { scope: sectionRef }

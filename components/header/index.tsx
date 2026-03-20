@@ -103,9 +103,7 @@ export function Navigation() {
               className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-[#2A2A2E] text-[#9E9B95] hover:text-[#F0EDE8] hover:border-[#C9A84C]/40 transition-colors duration-200"
               aria-label="Toggle menu"
             >
-              {menuOpen ? (
-                <X className="w-4 h-4" />
-              ) : (
+              {!menuOpen &&  (
                 <Menu className="w-4 h-4" />
               )}
             </button>

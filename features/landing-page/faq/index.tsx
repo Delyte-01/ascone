@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -48,15 +48,12 @@ export function FaqSection() {
   const rightRef = useRef<HTMLDivElement>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const toggle = (i: number) => setOpenIndex(openIndex === i ? null : i);
+  const toggle = (i: number) => setOpenIndex((prev) => (prev === i ? null : i));
 
+  // ── SCROLL & ENTRANCE — runs ONCE on mount, never on openIndex change ──
   useGSAP(
     () => {
-      const mm = gsap.matchMedia();
-
-      // ── Ambient idle — always runs ──────────────────────────────────────
-
-      // Orb breathe
+      // Ambient
       gsap.to(".faq-orb-center", {
         scale: 1.18,
         opacity: 0.2,
@@ -74,8 +71,6 @@ export function FaqSection() {
         ease: "sine.inOut",
         delay: 3,
       });
-
-      // Floating particles
       gsap.utils.toArray<HTMLElement>(".faq-particle").forEach((p, i) => {
         gsap.to(p, {
           y: gsap.utils.random(-18, -32),
@@ -88,8 +83,6 @@ export function FaqSection() {
           delay: i * 0.8,
         });
       });
-
-      // Top border shimmer sweep — repeating
       gsap.fromTo(
         ".faq-top-shimmer",
         { x: "-100%" },
@@ -102,88 +95,9 @@ export function FaqSection() {
         }
       );
 
-      // ── Accordion open/close GSAP animation ───────────────────────────
-      // This runs on every openIndex change
-      faqs.forEach((_, i) => {
-        const answerEl = document.querySelector<HTMLElement>(
-          `.faq-answer-${i}`
-        );
-        const lineEl = document.querySelector<HTMLElement>(`.faq-line-${i}`);
-        const borderEl = document.querySelector<HTMLElement>(`.faq-item-${i}`);
-        const isOpen = openIndex === i;
+      const mm = gsap.matchMedia();
 
-        if (answerEl) {
-          if (isOpen) {
-            // Expand: set height auto via clip trick
-            gsap.set(answerEl, { display: "block" });
-            gsap.fromTo(
-              answerEl,
-              { height: 0, opacity: 0 },
-              {
-                height: "auto",
-                opacity: 1,
-                duration: 0.55,
-                ease: "power3.out",
-                overwrite: true,
-              }
-            );
-            // Animate answer text words in
-            const words = answerEl.querySelectorAll<HTMLElement>(".faq-word");
-            if (words.length) {
-              gsap.fromTo(
-                words,
-                { y: 14, opacity: 0 },
-                {
-                  y: 0,
-                  opacity: 1,
-                  duration: 0.5,
-                  stagger: 0.012,
-                  ease: "power2.out",
-                  delay: 0.15,
-                }
-              );
-            }
-            // Vertical line grows down
-            if (lineEl) {
-              gsap.fromTo(
-                lineEl,
-                { scaleY: 0, opacity: 0 },
-                {
-                  scaleY: 1,
-                  opacity: 1,
-                  duration: 0.6,
-                  ease: "power3.out",
-                  transformOrigin: "top",
-                }
-              );
-            }
-          } else {
-            gsap.to(answerEl, {
-              height: 0,
-              opacity: 0,
-              duration: 0.38,
-              ease: "power3.in",
-              overwrite: true,
-              // onComplete: () => gsap.set(answerEl, { display: "none" }),
-            });
-          }
-        }
-
-        // Border color transition
-        if (borderEl) {
-          gsap.to(borderEl, {
-            borderBottomColor: isOpen
-              ? "rgba(201,168,76,0.3)"
-              : "rgba(30,30,34,1)",
-            duration: 0.4,
-            ease: "power2.out",
-          });
-        }
-      });
-
-      // ── DESKTOP: rich parallax + scroll triggers ───────────────────────
       mm.add("(min-width: 1024px)", () => {
-        // Background parallax layers
         gsap.to(".faq-orb-center", {
           y: -140,
           ease: "none",
@@ -216,17 +130,14 @@ export function FaqSection() {
           },
         });
 
-        // ── Left panel — SplitText headline + staggered elements ────────
         const headline = document.querySelector<HTMLElement>(".faq-headline");
         let split: SplitText | null = null;
-
         if (headline) {
           split = new SplitText(headline, { type: "lines,words" });
           gsap.set(split.words, {
             overflow: "hidden",
             display: "inline-block",
           });
-          // Wrap each word's inner span for clip reveal
           split.words.forEach((word) => {
             const inner = document.createElement("span");
             inner.style.display = "inline-block";
@@ -242,6 +153,10 @@ export function FaqSection() {
           });
         }
 
+        gsap.set(".faq-badge", { y: 28, opacity: 0 });
+        gsap.set(".faq-subtitle", { y: 32, opacity: 0 });
+        gsap.set(".faq-cta-link", { x: -30, opacity: 0 });
+
         const leftTl = gsap.timeline({
           scrollTrigger: {
             trigger: leftRef.current,
@@ -249,19 +164,15 @@ export function FaqSection() {
             toggleActions: "play none none reverse",
           },
         });
-
-        gsap.set(".faq-badge", { y: 28, opacity: 0 });
         leftTl.to(
           ".faq-badge",
           { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
           0
         );
-
-        // Word-by-word reveal
         if (split) {
           split.words.forEach((word, i) => {
             const inner = word.querySelector<HTMLElement>("span");
-            if (inner) {
+            if (inner)
               leftTl.to(
                 inner,
                 {
@@ -273,19 +184,13 @@ export function FaqSection() {
                 },
                 0.1 + i * 0.055
               );
-            }
           });
         }
-
-        gsap.set(".faq-subtitle", { y: 32, opacity: 0 });
         leftTl.to(
           ".faq-subtitle",
           { y: 0, opacity: 1, duration: 0.85, ease: "power3.out" },
           0.42
         );
-
-        // CTA links stagger
-        gsap.set(".faq-cta-link", { x: -30, opacity: 0 });
         leftTl.to(
           ".faq-cta-link",
           {
@@ -298,7 +203,6 @@ export function FaqSection() {
           0.56
         );
 
-        // Decorative side accent line draws
         gsap.fromTo(
           ".faq-side-line",
           { scaleY: 0, opacity: 0 },
@@ -316,8 +220,6 @@ export function FaqSection() {
           }
         );
 
-        // ── Right panel — FAQ items stagger entrance ──────────────────
-        // Each FAQ item slides in from different starting x positions
         const faqItems = gsap.utils.toArray<HTMLElement>(".faq-item-wrap");
         faqItems.forEach((item, i) => {
           gsap.set(item, {
@@ -340,7 +242,6 @@ export function FaqSection() {
           });
         });
 
-        // Right column slow parallax (moves slightly slower = depth)
         gsap.to(rightRef.current, {
           y: -40,
           ease: "none",
@@ -351,8 +252,6 @@ export function FaqSection() {
             scrub: 1.2,
           },
         });
-
-        // Left column even slower parallax
         gsap.to(leftRef.current, {
           y: -18,
           ease: "none",
@@ -364,14 +263,11 @@ export function FaqSection() {
           },
         });
 
-        // ── FAQ item hover micro-interactions ─────────────────────────
         faqItems.forEach((item) => {
           const btn = item.querySelector<HTMLElement>(".faq-btn");
           const num = item.querySelector<HTMLElement>(".faq-num");
           const iconRing = item.querySelector<HTMLElement>(".faq-icon-ring");
-
           if (!btn) return;
-
           btn.addEventListener("mouseenter", () => {
             gsap.to(num, {
               x: 4,
@@ -395,34 +291,33 @@ export function FaqSection() {
           });
         });
 
-        // ── Number counter — support stats ────────────────────────────
-        const statEls = document.querySelectorAll<HTMLElement>(".faq-stat-num");
-        statEls.forEach((el) => {
-          const target = parseFloat(el.dataset.target || "0");
-          const suffix = el.dataset.suffix || "";
-          const proxy = { val: 0 };
-          gsap.to(proxy, {
-            val: target,
-            duration: 1.8,
-            ease: "power2.out",
-            onUpdate() {
-              el.textContent = Math.floor(proxy.val).toLocaleString() + suffix;
-            },
-            scrollTrigger: {
-              trigger: el,
-              start: "top 88%",
-              toggleActions: "play none none reset",
-            },
+        document
+          .querySelectorAll<HTMLElement>(".faq-stat-num")
+          .forEach((el) => {
+            const target = parseFloat(el.dataset.target || "0");
+            const suffix = el.dataset.suffix || "";
+            const proxy = { val: 0 };
+            gsap.to(proxy, {
+              val: target,
+              duration: 1.8,
+              ease: "power2.out",
+              onUpdate() {
+                el.textContent =
+                  Math.floor(proxy.val).toLocaleString() + suffix;
+              },
+              scrollTrigger: {
+                trigger: el,
+                start: "top 88%",
+                toggleActions: "play none none reset",
+              },
+            });
           });
-        });
 
         return () => mm.revert();
       });
 
-      // ── MOBILE / TABLET: lightweight only ─────────────────────────────
       mm.add("(max-width: 1023.9px)", () => {
-        // Simple fade-ups, no parallax, no SplitText
-        gsap.from(".faq-badge, .faq-headline, .faq-subtitle", {
+        gsap.from([".faq-badge", ".faq-headline", ".faq-subtitle"], {
           y: 40,
           opacity: 0,
           duration: 0.85,
@@ -434,7 +329,6 @@ export function FaqSection() {
             toggleActions: "play none none reverse",
           },
         });
-
         gsap.from(".faq-cta-link", {
           y: 24,
           opacity: 0,
@@ -447,7 +341,6 @@ export function FaqSection() {
             toggleActions: "play none none reverse",
           },
         });
-
         gsap.from(".faq-item-wrap", {
           y: 40,
           opacity: 0,
@@ -460,21 +353,93 @@ export function FaqSection() {
             toggleActions: "play none none reverse",
           },
         });
-
         return () => mm.revert();
       });
     },
-    { scope: sectionRef, dependencies: [openIndex] }
+    { scope: sectionRef }
+    // NO dependencies — runs exactly once on mount
   );
+
+  // ── ACCORDION — plain useEffect, isolated from scroll hook ─────────────
+  useEffect(() => {
+    faqs.forEach((_, i) => {
+      const answerEl = document.querySelector<HTMLElement>(`.faq-answer-${i}`);
+      const lineEl = document.querySelector<HTMLElement>(`.faq-line-${i}`);
+      const borderEl = document.querySelector<HTMLElement>(`.faq-item-${i}`);
+      const isOpen = openIndex === i;
+
+      if (answerEl) {
+        if (isOpen) {
+          gsap.set(answerEl, { display: "block" });
+          gsap.fromTo(
+            answerEl,
+            { height: 0, opacity: 0 },
+            {
+              height: "auto",
+              opacity: 1,
+              duration: 0.55,
+              ease: "power3.out",
+              overwrite: true,
+            }
+          );
+          const words = answerEl.querySelectorAll<HTMLElement>(".faq-word");
+          if (words.length) {
+            gsap.fromTo(
+              words,
+              { y: 14, opacity: 0 },
+              {
+                y: 0,
+                opacity: 1,
+                duration: 0.5,
+                stagger: 0.012,
+                ease: "power2.out",
+                delay: 0.15,
+              }
+            );
+          }
+          if (lineEl) {
+            gsap.fromTo(
+              lineEl,
+              { scaleY: 0, opacity: 0 },
+              {
+                scaleY: 1,
+                opacity: 1,
+                duration: 0.6,
+                ease: "power3.out",
+                transformOrigin: "top",
+              }
+            );
+          }
+        } else {
+          gsap.to(answerEl, {
+            height: 0,
+            opacity: 0,
+            duration: 0.38,
+            ease: "power3.in",
+            overwrite: true,
+            // onComplete: () => gsap.set(answerEl, { display: "none" }),
+          });
+        }
+      }
+
+      if (borderEl) {
+        gsap.to(borderEl, {
+          borderBottomColor: isOpen
+            ? "rgba(201,168,76,0.3)"
+            : "rgba(30,30,34,1)",
+          duration: 0.4,
+          ease: "power2.out",
+        });
+      }
+    });
+  }, [openIndex]);
 
   return (
     <section
       ref={sectionRef}
       className="w-full py-24 md:py-32 lg:py-40 bg-[#0A0A0B] relative overflow-hidden"
     >
-      {/* ── Background layers ── */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
-        {/* Grid */}
         <div className="faq-grid-bg absolute inset-0 opacity-[0.02]">
           <svg width="100%" height="100%">
             <defs>
@@ -495,24 +460,20 @@ export function FaqSection() {
             <rect width="100%" height="100%" fill="url(#faqgrid)" />
           </svg>
         </div>
-
-        {/* Orbs */}
         <div
           className="faq-orb-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] rounded-full opacity-[0.07]"
           style={{
             background:
-              "radial-gradient(ellipse, rgba(201,168,76,0.18) 0%, transparent 65%)",
+              "radial-gradient(ellipse,rgba(201,168,76,0.18) 0%,transparent 65%)",
           }}
         />
         <div
           className="faq-orb-left absolute -top-20 -left-40 w-[500px] h-[500px] rounded-full opacity-[0.06]"
           style={{
             background:
-              "radial-gradient(circle, rgba(201,168,76,0.14) 0%, transparent 65%)",
+              "radial-gradient(circle,rgba(201,168,76,0.14) 0%,transparent 65%)",
           }}
         />
-
-        {/* Floating particles */}
         {[
           { l: "6%", t: "18%" },
           { l: "18%", t: "72%" },
@@ -535,8 +496,6 @@ export function FaqSection() {
             }}
           />
         ))}
-
-        {/* Diagonal accent lines */}
         <svg className="absolute inset-0 w-full h-full">
           <line
             x1="0"
@@ -557,41 +516,36 @@ export function FaqSection() {
         </svg>
       </div>
 
-      {/* Top border with shimmer */}
       <div className="absolute top-0 inset-x-0 h-px overflow-hidden pointer-events-none">
         <div
           style={{
-            background:
-              "linear-gradient(90deg, transparent, rgba(201,168,76,0.22) 30%, rgba(201,168,76,0.38) 50%, rgba(201,168,76,0.22) 70%, transparent)",
             height: "100%",
+            background:
+              "linear-gradient(90deg,transparent,rgba(201,168,76,0.22) 30%,rgba(201,168,76,0.38) 50%,rgba(201,168,76,0.22) 70%,transparent)",
           }}
         />
         <div
           className="faq-top-shimmer absolute inset-y-0 w-1/4"
           style={{
             background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
+              "linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)",
           }}
         />
       </div>
 
-      {/* ── Content ── */}
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-[1fr_1.6fr] gap-12 lg:gap-20 xl:gap-28 items-start">
-          {/* LEFT — Sticky panel */}
           <div
             ref={leftRef}
             className="lg:sticky lg:top-24 space-y-10 lg:space-y-12"
           >
-            {/* Decorative vertical side line (desktop) */}
             <div
               className="faq-side-line hidden lg:block absolute left-0 top-0 w-px h-24 origin-top"
               style={{
                 background:
-                  "linear-gradient(to bottom, rgba(201,168,76,0.5), transparent)",
+                  "linear-gradient(to bottom,rgba(201,168,76,0.5),transparent)",
               }}
             />
-
             <div className="space-y-6">
               <div className="faq-badge inline-flex items-center gap-2.5 border border-[#C9A84C]/25 rounded-full px-5 py-2 bg-[#C9A84C]/6">
                 <span className="w-2 h-2 rounded-full bg-[#C9A84C] animate-pulse" />
@@ -599,10 +553,9 @@ export function FaqSection() {
                   FAQ
                 </span>
               </div>
-
               <h2
                 className="faq-headline font-serif text-5xl md:text-6xl lg:text-7xl leading-[1.05] text-[#F0EDE8]"
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                style={{ fontFamily: "'Cormorant Garamond',serif" }}
               >
                 Questions
                 <br />
@@ -610,71 +563,61 @@ export function FaqSection() {
                 <br />
                 hear.
               </h2>
-
               <p className="faq-subtitle font-sans font-light text-[#9E9B95] text-lg leading-relaxed max-w-md">
                 Can&apos;t find what you&apos;re looking for? Our support team
                 is available 24/7 — usually responds in under 2 minutes.
               </p>
             </div>
 
-            {/* Support stat pills */}
             <div className="flex items-center gap-6">
-              <div className="space-y-0.5">
-                <p
-                  className="font-serif text-2xl text-[#F0EDE8]"
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                >
-                  <span
-                    className="faq-stat-num"
-                    data-target="2"
-                    data-suffix="min"
-                  >
-                    2min
-                  </span>
-                </p>
-                <p className="text-[10px] text-[#5A5855] uppercase tracking-wider">
-                  avg response
-                </p>
-              </div>
-              <div className="w-px h-8 bg-[#1E1E22]" />
-              <div className="space-y-0.5">
-                <p
-                  className="font-serif text-2xl text-[#F0EDE8]"
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                >
-                  <span
-                    className="faq-stat-num"
-                    data-target="24"
-                    data-suffix="/7"
-                  >
-                    24/7
-                  </span>
-                </p>
-                <p className="text-[10px] text-[#5A5855] uppercase tracking-wider">
-                  availability
-                </p>
-              </div>
-              <div className="w-px h-8 bg-[#1E1E22]" />
-              <div className="space-y-0.5">
-                <p
-                  className="font-serif text-2xl text-[#C9A84C]"
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                >
-                  <span
-                    className="faq-stat-num"
-                    data-target="99"
-                    data-suffix="%"
-                  >
-                    99%
-                  </span>
-                </p>
-                <p className="text-[10px] text-[#5A5855] uppercase tracking-wider">
-                  satisfaction
-                </p>
-              </div>
+              {[
+                {
+                  target: "2",
+                  suffix: "min",
+                  label: "avg response",
+                  val: "2min",
+                  gold: false,
+                },
+                {
+                  target: "24",
+                  suffix: "/7",
+                  label: "availability",
+                  val: "24/7",
+                  gold: false,
+                },
+                {
+                  target: "99",
+                  suffix: "%",
+                  label: "satisfaction",
+                  val: "99%",
+                  gold: true,
+                },
+              ].map((s, i) => (
+                <div key={i} className="flex items-center gap-6">
+                  {i > 0 && <div className="w-px h-8 bg-[#1E1E22]" />}
+                  <div className="space-y-0.5">
+                    <p
+                      className={`font-serif text-2xl ${
+                        s.gold ? "text-[#C9A84C]" : "text-[#F0EDE8]"
+                      }`}
+                      style={{ fontFamily: "'Cormorant Garamond',serif" }}
+                    >
+                      <span
+                        className="faq-stat-num"
+                        data-target={s.target}
+                        data-suffix={s.suffix}
+                      >
+                        {s.val}
+                      </span>
+                    </p>
+                    <p className="text-[10px] text-[#5A5855] uppercase tracking-wider">
+                      {s.label}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* CTAs */}
             <div className="faq-cta-wrap flex flex-col gap-4">
               <a
                 href="#"
@@ -692,7 +635,6 @@ export function FaqSection() {
                   Talk to support
                 </span>
               </a>
-
               <a
                 href="#"
                 className="faq-cta-link inline-flex items-center gap-3 group w-fit"
@@ -718,7 +660,6 @@ export function FaqSection() {
             </div>
           </div>
 
-          {/* RIGHT — Accordion */}
           <div ref={rightRef} className="space-y-0">
             {faqs.map((faq, i) => {
               const isOpen = openIndex === i;
@@ -739,28 +680,23 @@ export function FaqSection() {
                     className="faq-btn w-full flex items-start justify-between gap-6 py-6 md:py-8 text-left group"
                   >
                     <div className="flex items-start gap-4 md:gap-5 flex-1 min-w-0">
-                      {/* Number */}
                       <span
                         className="faq-num font-sans text-xs md:text-sm text-[#5A5855] mt-2 flex-shrink-0 w-6 tabular-nums"
                         style={{ transition: "none" }}
                       >
                         {String(i + 1).padStart(2, "0")}
                       </span>
-
                       <div className="space-y-2 flex-1 min-w-0">
-                        {/* Question */}
                         <p
                           className={`font-serif text-lg md:text-xl lg:text-2xl leading-tight transition-colors duration-300 ${
                             isOpen
                               ? "text-[#C9A84C]"
                               : "text-[#F0EDE8] group-hover:text-[#E8C97A]"
                           }`}
-                          style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                          style={{ fontFamily: "'Cormorant Garamond',serif" }}
                         >
                           {faq.question}
                         </p>
-
-                        {/* Tag — slides away when open */}
                         <span
                           className={`inline-block font-sans text-xs uppercase tracking-wider px-3 py-1 rounded-full border transition-all duration-400 ${
                             isOpen
@@ -772,8 +708,6 @@ export function FaqSection() {
                         </span>
                       </div>
                     </div>
-
-                    {/* Icon ring */}
                     <div
                       className={`faq-icon-ring flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-full border flex items-center justify-center mt-1.5 transition-all duration-400 ${
                         isOpen
@@ -796,7 +730,6 @@ export function FaqSection() {
                     </div>
                   </button>
 
-                  {/* Answer panel — GSAP controlled */}
                   <div
                     className={`faq-answer-${i} overflow-hidden`}
                     style={{
@@ -807,18 +740,15 @@ export function FaqSection() {
                   >
                     <div className="pl-9 md:pl-11 pb-8 md:pb-10 pr-4">
                       <div className="flex gap-5">
-                        {/* Animated vertical line */}
                         <div
                           className={`faq-line-${i} w-px flex-shrink-0 origin-top`}
                           style={{
                             background:
-                              "linear-gradient(to bottom, rgba(201,168,76,0.6), rgba(201,168,76,0.15), transparent)",
+                              "linear-gradient(to bottom,rgba(201,168,76,0.6),rgba(201,168,76,0.15),transparent)",
                             transform: "scaleY(0)",
                             opacity: 0,
                           }}
                         />
-
-                        {/* Answer text — words split for stagger */}
                         <p
                           className="font-sans font-light text-base md:text-lg text-[#9E9B95] leading-[1.85]"
                           dangerouslySetInnerHTML={{
@@ -838,7 +768,6 @@ export function FaqSection() {
               );
             })}
 
-            {/* Bottom note */}
             <div className="pt-8 flex items-center gap-3">
               <div className="h-px flex-1 bg-gradient-to-r from-[#C9A84C]/20 to-transparent" />
               <p className="font-sans text-xs text-[#3A3A3E]">

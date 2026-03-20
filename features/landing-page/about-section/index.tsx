@@ -22,9 +22,33 @@ const transferRates = [
 ];
 
 const stats = [
-  { stat: "$4.2B+", sub: "transferred globally", sup: "This quarter" },
-  { stat: "0.3s", sub: "average settlement time", sup: "Real-time rails" },
-  { stat: "99.98%", sub: "platform uptime", sup: "Last 12 months" },
+  {
+    stat: "$4.2B+",
+    raw: 4.2,
+    prefix: "$",
+    suffix: "B+",
+    decimals: 1,
+    sub: "transferred globally",
+    sup: "This quarter",
+  },
+  {
+    stat: "0.3s",
+    raw: 0.3,
+    prefix: "",
+    suffix: "s",
+    decimals: 1,
+    sub: "average settlement time",
+    sup: "Real-time rails",
+  },
+  {
+    stat: "99.98%",
+    raw: 99.98,
+    prefix: "",
+    suffix: "%",
+    decimals: 2,
+    sub: "platform uptime",
+    sup: "Last 12 months",
+  },
 ];
 
 const circumference = 2 * Math.PI * 54;
@@ -36,9 +60,7 @@ export function AboutSection() {
 
   useGSAP(
     () => {
-      const mm = gsap.matchMedia();
-
-      // ── Ambient idle (always) ────────────────────────────────────────────
+      // ── Always-on ambient (both viewports) ────────────────────────────
       gsap.to(".about-orb-right", {
         scale: 1.14,
         opacity: 0.09,
@@ -56,8 +78,6 @@ export function AboutSection() {
         ease: "sine.inOut",
         delay: 2.5,
       });
-
-      // Floating micro particles
       gsap.utils.toArray<HTMLElement>(".about-particle").forEach((p, i) => {
         gsap.to(p, {
           y: gsap.utils.random(-16, -30),
@@ -71,7 +91,7 @@ export function AboutSection() {
         });
       });
 
-      // Arrow circle in card 2 — slow spin
+      // Arrow circle slow spin (always)
       gsap.to(".arrow-circle", {
         rotation: 360,
         duration: 18,
@@ -79,8 +99,6 @@ export function AboutSection() {
         ease: "none",
         transformOrigin: "center center",
       });
-
-      // Pulse glow on arrow center icon (counteracts rotation)
       gsap.to(".arrow-icon-inner", {
         rotation: -360,
         duration: 18,
@@ -89,7 +107,7 @@ export function AboutSection() {
         transformOrigin: "center center",
       });
 
-      // Transfer "from" box — subtle value shimmer
+      // Top shimmer sweep (always)
       gsap.fromTo(
         ".about-top-shimmer",
         { x: "-100%" },
@@ -102,9 +120,14 @@ export function AboutSection() {
         }
       );
 
-      // ── DESKTOP ──────────────────────────────────────────────────────────
+      // ── matchMedia — clean context separation ────────────────────────
+      const mm = gsap.matchMedia();
+
+      // ═══════════════════════════════════════════════════════════════
+      // DESKTOP  ≥ 768px
+      // ═══════════════════════════════════════════════════════════════
       mm.add("(min-width: 768px)", () => {
-        // ── 1. Background deep parallax ────────────────────────────────
+        // ── BG parallax ─────────────────────────────────────────────
         gsap.to(".about-orb-right", {
           y: -130,
           x: 60,
@@ -137,10 +160,9 @@ export function AboutSection() {
           },
         });
 
-        // ── 2. Header — SplitText char reveal ─────────────────────────
+        // ── Header SplitText ─────────────────────────────────────────
         const headline = document.querySelector<HTMLElement>(".about-headline");
         let split: SplitText | null = null;
-
         if (headline) {
           split = new SplitText(headline, { type: "lines,words,chars" });
           gsap.set(split.chars, {
@@ -151,6 +173,9 @@ export function AboutSection() {
           });
         }
 
+        gsap.set(".about-badge", { y: 28, opacity: 0 });
+        gsap.set(".about-desc", { y: 34, opacity: 0 });
+
         const headerTl = gsap.timeline({
           scrollTrigger: {
             trigger: ".about-header",
@@ -158,14 +183,11 @@ export function AboutSection() {
             toggleActions: "play none none reverse",
           },
         });
-
-        gsap.set(".about-badge", { y: 28, opacity: 0 });
         headerTl.to(
           ".about-badge",
           { y: 0, opacity: 1, duration: 0.75, ease: "power3.out" },
           0
         );
-
         if (split) {
           headerTl.to(
             split.chars,
@@ -180,15 +202,12 @@ export function AboutSection() {
             0.1
           );
         }
-
-        gsap.set(".about-desc", { y: 34, opacity: 0 });
         headerTl.to(
           ".about-desc",
           { y: 0, opacity: 1, duration: 0.85, ease: "power3.out" },
           0.38
         );
 
-        // Divider line draws
         gsap.fromTo(
           ".about-divider",
           { width: "0%", opacity: 0 },
@@ -205,7 +224,7 @@ export function AboutSection() {
           }
         );
 
-        // ── 3. Cards — 3D entrance from different axes ─────────────────
+        // ── Cards 3D entrance ────────────────────────────────────────
         gsap.set(".card-1", {
           y: 130,
           rotateY: -14,
@@ -221,6 +240,11 @@ export function AboutSection() {
           opacity: 0,
         });
 
+        const cardTrigger = {
+          trigger: ".card-grid",
+          start: "top 85%",
+          toggleActions: "play none none reverse",
+        };
         gsap.to(".card-1", {
           y: 0,
           rotateY: 0,
@@ -228,11 +252,7 @@ export function AboutSection() {
           opacity: 1,
           duration: 1.2,
           ease: "power4.out",
-          scrollTrigger: {
-            trigger: ".card-grid",
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
+          scrollTrigger: cardTrigger,
         });
         gsap.to(".card-2", {
           y: 0,
@@ -242,14 +262,10 @@ export function AboutSection() {
           duration: 1.2,
           ease: "power4.out",
           delay: 0.14,
-          scrollTrigger: {
-            trigger: ".card-grid",
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
+          scrollTrigger: cardTrigger,
         });
 
-        // Cards drift at different parallax speeds
+        // Cards parallax drift (different speeds)
         gsap.to(".card-1", {
           y: -28,
           ease: "none",
@@ -271,104 +287,22 @@ export function AboutSection() {
           },
         });
 
-        // ── 4. Card 1 inner — ring + progress on scroll ────────────────
+        // ── Card 1 inner elements ────────────────────────────────────
         const ringTrigger = {
           trigger: ".card-1",
           start: "top 80%",
           toggleActions: "play none none reverse",
         };
 
-        // Outer ring draws from 0
-        gsap.fromTo(
-          ".ring-outer",
-          { strokeDashoffset: circumference },
-          {
-            strokeDashoffset: circumference * (1 - 0.84),
-            duration: 1.6,
-            ease: "power3.inOut",
-            scrollTrigger: ringTrigger,
-          }
-        );
-
-        // Inner ring
-        gsap.fromTo(
-          ".ring-inner",
-          { strokeDashoffset: innerCircumference },
-          {
-            strokeDashoffset: innerCircumference * (1 - 0.7),
-            duration: 1.4,
-            ease: "power2.inOut",
-            delay: 0.2,
-            scrollTrigger: ringTrigger,
-          }
-        );
-
-        // Ring text count up
-        const ringText = document.querySelector<HTMLElement>(".ring-pct");
-        if (ringText) {
-          const proxy = { val: 0 };
-          gsap.to(proxy, {
-            val: 84,
-            duration: 1.6,
-            ease: "power2.out",
-            onUpdate() {
-              ringText.textContent = Math.floor(proxy.val) + "%";
-            },
-            scrollTrigger: ringTrigger,
-          });
-        }
-
-        // Ring text fade in
-        gsap.set(".ring-text", { scale: 0.6, opacity: 0 });
-        gsap.to(".ring-text", {
-          scale: 1,
-          opacity: 1,
-          duration: 0.8,
-          ease: "back.out(2)",
-          scrollTrigger: ringTrigger,
-          delay: 0.3,
-        });
-
-        // Total saved counter
-        const savedEl = document.querySelector<HTMLElement>(".total-saved-num");
-        if (savedEl) {
-          const proxy2 = { val: 0 };
-          gsap.to(proxy2, {
-            val: 12000,
-            duration: 1.8,
-            ease: "power2.out",
-            onUpdate() {
-              savedEl.textContent =
-                "$" + Math.floor(proxy2.val).toLocaleString();
-            },
-            scrollTrigger: ringTrigger,
-          });
-        }
-
-        // Progress bars scrub-driven
-        savingsGoals.forEach((goal, i) => {
-          gsap.fromTo(
-            `.progress-bar-${i}`,
-            { width: "0%" },
-            {
-              width: `${goal.pct}%`,
-              duration: 1.4,
-              ease: "power2.out",
-              delay: 0.1 * i,
-              scrollTrigger: {
-                trigger: ".progress-bars",
-                start: "top 84%",
-                toggleActions: "play none none reverse",
-              },
-            }
-          );
-        });
-
-        // Card 1 items stagger in
+        // Set initial states for card 1 inner
         gsap.set(".card-1-header, .card-1-meta, .ring-section", {
           y: 22,
           opacity: 0,
         });
+        gsap.set(".ring-text", { scale: 0.6, opacity: 0 });
+        gsap.set(".ring-outer", { strokeDashoffset: circumference });
+        gsap.set(".ring-inner", { strokeDashoffset: innerCircumference });
+
         gsap.to(".card-1-header, .card-1-meta, .ring-section", {
           y: 0,
           opacity: 1,
@@ -379,7 +313,80 @@ export function AboutSection() {
           scrollTrigger: ringTrigger,
         });
 
-        // ── 5. Card 2 inner — transfer elements ───────────────────────
+        // Rings draw
+        gsap.to(".ring-outer", {
+          strokeDashoffset: circumference * (1 - 0.84),
+          duration: 1.6,
+          ease: "power3.inOut",
+          scrollTrigger: ringTrigger,
+        });
+        gsap.to(".ring-inner", {
+          strokeDashoffset: innerCircumference * (1 - 0.7),
+          duration: 1.4,
+          ease: "power2.inOut",
+          delay: 0.2,
+          scrollTrigger: ringTrigger,
+        });
+
+        // Ring % counter
+        const ringPctEl = document.querySelector<HTMLElement>(".ring-pct");
+        if (ringPctEl) {
+          ringPctEl.textContent = "0%";
+          const p = { v: 0 };
+          gsap.to(p, {
+            v: 84,
+            duration: 1.6,
+            ease: "power2.out",
+            onUpdate() {
+              ringPctEl.textContent = Math.floor(p.v) + "%";
+            },
+            scrollTrigger: ringTrigger,
+          });
+        }
+
+        // Ring text fade
+        gsap.to(".ring-text", {
+          scale: 1,
+          opacity: 1,
+          duration: 0.8,
+          ease: "back.out(2)",
+          delay: 0.3,
+          scrollTrigger: ringTrigger,
+        });
+
+        // Total saved counter
+        const savedEl = document.querySelector<HTMLElement>(".total-saved-num");
+        if (savedEl) {
+          savedEl.textContent = "$0";
+          const p2 = { v: 0 };
+          gsap.to(p2, {
+            v: 12000,
+            duration: 1.8,
+            ease: "power2.out",
+            onUpdate() {
+              savedEl.textContent = "$" + Math.floor(p2.v).toLocaleString();
+            },
+            scrollTrigger: ringTrigger,
+          });
+        }
+
+        // Progress bars
+        savingsGoals.forEach((goal, i) => {
+          gsap.set(`.progress-bar-${i}`, { width: "0%" });
+          gsap.to(`.progress-bar-${i}`, {
+            width: `${goal.pct}%`,
+            duration: 1.4,
+            ease: "power2.out",
+            delay: 0.1 * i,
+            scrollTrigger: {
+              trigger: ".progress-bars",
+              start: "top 84%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        });
+
+        // ── Card 2 inner elements ────────────────────────────────────
         const transferTrigger = {
           trigger: ".card-2",
           start: "top 80%",
@@ -387,6 +394,11 @@ export function AboutSection() {
         };
 
         gsap.set(".card-2-header", { y: 22, opacity: 0 });
+        gsap.set(".transfer-from", { x: -60, opacity: 0 });
+        gsap.set(".arrow-wrap", { scale: 0, rotation: -90, opacity: 0 });
+        gsap.set(".transfer-to", { x: 60, opacity: 0 });
+        gsap.set(".rate-row-item", { y: 20, opacity: 0 });
+
         gsap.to(".card-2-header", {
           y: 0,
           opacity: 1,
@@ -394,8 +406,6 @@ export function AboutSection() {
           ease: "power3.out",
           scrollTrigger: transferTrigger,
         });
-
-        gsap.set(".transfer-from", { x: -60, opacity: 0 });
         gsap.to(".transfer-from", {
           x: 0,
           opacity: 1,
@@ -404,8 +414,6 @@ export function AboutSection() {
           delay: 0.2,
           scrollTrigger: transferTrigger,
         });
-
-        gsap.set(".arrow-wrap", { scale: 0, rotation: -90, opacity: 0 });
         gsap.to(".arrow-wrap", {
           scale: 1,
           rotation: 0,
@@ -415,8 +423,6 @@ export function AboutSection() {
           delay: 0.38,
           scrollTrigger: transferTrigger,
         });
-
-        gsap.set(".transfer-to", { x: 60, opacity: 0 });
         gsap.to(".transfer-to", {
           x: 0,
           opacity: 1,
@@ -425,26 +431,9 @@ export function AboutSection() {
           delay: 0.38,
           scrollTrigger: transferTrigger,
         });
-
-        // Received amount count up
-        const receivedEl =
-          document.querySelector<HTMLElement>(".received-amount");
-        if (receivedEl) {
-          const proxy = { val: 0 };
-          gsap.to(proxy, {
-            val: 19682,
-            duration: 1.6,
-            ease: "power2.out",
-            onUpdate() {
-              receivedEl.textContent = Math.floor(proxy.val).toLocaleString();
-            },
-            scrollTrigger: transferTrigger,
-          });
-        }
-
-        gsap.from(".rate-row-item", {
-          y: 20,
-          opacity: 0,
+        gsap.to(".rate-row-item", {
+          y: 0,
+          opacity: 1,
           duration: 0.75,
           stagger: 0.1,
           ease: "power2.out",
@@ -452,7 +441,27 @@ export function AboutSection() {
           scrollTrigger: transferTrigger,
         });
 
-        // ── 6. Stats strip entrance ────────────────────────────────────
+        // Received amount counter
+        const receivedEl =
+          document.querySelector<HTMLElement>(".received-amount");
+        if (receivedEl) {
+          receivedEl.textContent = "0";
+          const p3 = { v: 0 };
+          gsap.to(p3, {
+            v: 19682,
+            duration: 1.6,
+            ease: "power2.out",
+            onUpdate() {
+              receivedEl.textContent = Math.floor(p3.v).toLocaleString();
+            },
+            scrollTrigger: {
+              ...transferTrigger,
+              toggleActions: "play none none reset",
+            },
+          });
+        }
+
+        // ── Stats strip ──────────────────────────────────────────────
         gsap.set(".stat-card", { y: 60, opacity: 0, scale: 0.94 });
         gsap.to(".stat-card", {
           y: 0,
@@ -468,27 +477,18 @@ export function AboutSection() {
           },
         });
 
-        // Stats count up
-        [
-          { sel: ".stat-val-0", target: 4.2, prefix: "$", suffix: "B+" },
-          { sel: ".stat-val-1", target: 0.3, prefix: "", suffix: "s" },
-          { sel: ".stat-val-2", target: 99.98, prefix: "", suffix: "%" },
-        ].forEach(({ sel, target, prefix, suffix }) => {
-          const el = document.querySelector<HTMLElement>(sel);
+        // Stat counters
+        stats.forEach(({ raw, prefix, suffix, decimals }, i) => {
+          const el = document.querySelector<HTMLElement>(`.stat-val-${i}`);
           if (!el) return;
-          const proxy = { val: 0 };
-          gsap.to(proxy, {
-            val: target,
+          el.textContent = prefix + (0).toFixed(decimals) + suffix;
+          const p = { v: 0 };
+          gsap.to(p, {
+            v: raw,
             duration: 1.8,
             ease: "power2.out",
             onUpdate() {
-              const v =
-                target < 1
-                  ? proxy.val.toFixed(1)
-                  : target < 10
-                  ? proxy.val.toFixed(2)
-                  : Math.floor(proxy.val);
-              el.textContent = prefix + v + suffix;
+              el.textContent = prefix + p.v.toFixed(decimals) + suffix;
             },
             scrollTrigger: {
               trigger: ".stats-strip",
@@ -498,7 +498,7 @@ export function AboutSection() {
           });
         });
 
-        // ── 7. Card hover — 3D magnetic tilt ──────────────────────────
+        // ── 3D magnetic hover ────────────────────────────────────────
         [".card-1", ".card-2"].forEach((sel) => {
           const card = document.querySelector<HTMLElement>(sel);
           if (!card) return;
@@ -515,7 +515,7 @@ export function AboutSection() {
               duration: 0.5,
               ease: "power2.out",
             });
-            if (glow) {
+            if (glow)
               gsap.to(glow, {
                 opacity: 1,
                 x: `${dx * 25}%`,
@@ -523,9 +523,7 @@ export function AboutSection() {
                 duration: 0.4,
                 ease: "power2.out",
               });
-            }
           });
-
           card.addEventListener("mouseleave", () => {
             gsap.to(card, {
               rotateY: 0,
@@ -537,11 +535,11 @@ export function AboutSection() {
           });
         });
 
-        // ── 8. Stat card hover lift ────────────────────────────────────
+        // Stat card hover lift
         document.querySelectorAll<HTMLElement>(".stat-card").forEach((card) => {
           card.addEventListener("mouseenter", () => {
             gsap.to(card, {
-              y: -5,
+              y: -6,
               scale: 1.02,
               borderColor: "rgba(201,168,76,0.3)",
               duration: 0.35,
@@ -559,12 +557,42 @@ export function AboutSection() {
           });
         });
 
-        return () => mm.revert();
+        return () => {
+          mm.revert();
+        };
       });
 
-      // ── MOBILE: lightweight only ────────────────────────────────────────
+      // ═══════════════════════════════════════════════════════════════
+      // MOBILE  < 768px
+      // ═══════════════════════════════════════════════════════════════
       mm.add("(max-width: 767.9px)", () => {
-        gsap.from(".about-badge, .about-headline, .about-desc", {
+        // Clear any desktop gsap.set that might have leaked
+        gsap.set(
+          ".about-badge,.about-headline,.about-desc,.card-1,.card-2,.card-1-header,.card-1-meta,.ring-section,.card-2-header,.transfer-from,.arrow-wrap,.transfer-to,.rate-row-item,.stat-card",
+          { clearProps: "all" }
+        );
+
+        // Ensure initial text states for all counters
+        const ringPctEl = document.querySelector<HTMLElement>(".ring-pct");
+        const savedEl = document.querySelector<HTMLElement>(".total-saved-num");
+        const receivedEl =
+          document.querySelector<HTMLElement>(".received-amount");
+        if (ringPctEl) ringPctEl.textContent = "0%";
+        if (savedEl) savedEl.textContent = "$0";
+        if (receivedEl) receivedEl.textContent = "0";
+        stats.forEach(({ prefix, suffix, decimals }, i) => {
+          const el = document.querySelector<HTMLElement>(`.stat-val-${i}`);
+          if (el) el.textContent = prefix + (0).toFixed(decimals) + suffix;
+        });
+        savingsGoals.forEach((_, i) => {
+          gsap.set(`.progress-bar-${i}`, { width: "0%" });
+        });
+        gsap.set(".ring-outer", { strokeDashoffset: circumference });
+        gsap.set(".ring-inner", { strokeDashoffset: innerCircumference });
+        gsap.set(".ring-text", { opacity: 0 });
+
+        // ── Header ──────────────────────────────────────────────────
+        gsap.from([".about-badge", ".about-headline", ".about-desc"], {
           y: 36,
           opacity: 0,
           duration: 0.85,
@@ -577,11 +605,11 @@ export function AboutSection() {
           },
         });
 
-        gsap.from(".card-1, .card-2", {
+        // ── Card 1 ──────────────────────────────────────────────────
+        gsap.from(".card-1", {
           y: 50,
           opacity: 0,
           duration: 0.9,
-          stagger: 0.14,
           ease: "power3.out",
           scrollTrigger: {
             trigger: ".card-grid",
@@ -590,46 +618,143 @@ export function AboutSection() {
           },
         });
 
-        // Progress bars — simple
-        savingsGoals.forEach((goal, i) => {
-          gsap.fromTo(
-            `.progress-bar-${i}`,
-            { width: "0%" },
-            {
-              width: `${goal.pct}%`,
-              duration: 1.1,
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: ".progress-bars",
-                start: "top 90%",
-                toggleActions: "play none none reverse",
-              },
-            }
-          );
+        // Ring draw (mobile)
+        gsap.to(".ring-outer", {
+          strokeDashoffset: circumference * (1 - 0.84),
+          duration: 1.3,
+          ease: "power2.inOut",
+          scrollTrigger: {
+            trigger: ".card-1",
+            start: "top 88%",
+            toggleActions: "play none none reverse",
+          },
+        });
+        gsap.to(".ring-inner", {
+          strokeDashoffset: innerCircumference * (1 - 0.7),
+          duration: 1.1,
+          ease: "power2.inOut",
+          delay: 0.15,
+          scrollTrigger: {
+            trigger: ".card-1",
+            start: "top 88%",
+            toggleActions: "play none none reverse",
+          },
+        });
+        gsap.to(".ring-text", {
+          opacity: 1,
+          duration: 0.5,
+          delay: 0.4,
+          scrollTrigger: {
+            trigger: ".card-1",
+            start: "top 88%",
+            toggleActions: "play none none reverse",
+          },
         });
 
-        // Ring — simple scale in
-        gsap.fromTo(
-          ".ring-outer",
-          { strokeDashoffset: circumference },
-          {
-            strokeDashoffset: circumference * (1 - 0.84),
-            duration: 1.3,
-            ease: "power2.inOut",
+        // Ring % counter (mobile)
+        if (ringPctEl) {
+          const p = { v: 0 };
+          gsap.to(p, {
+            v: 84,
+            duration: 1.4,
+            ease: "power2.out",
+            onUpdate() {
+              ringPctEl.textContent = Math.floor(p.v) + "%";
+            },
             scrollTrigger: {
               trigger: ".card-1",
-              start: "top 88%",
-              toggleActions: "play none none reverse",
+              start: "top 86%",
+              toggleActions: "play none none reset",
             },
-          }
-        );
+          });
+        }
 
+        // Total saved counter (mobile)
+        if (savedEl) {
+          const p2 = { v: 0 };
+          gsap.to(p2, {
+            v: 12000,
+            duration: 1.6,
+            ease: "power2.out",
+            onUpdate() {
+              savedEl.textContent = "$" + Math.floor(p2.v).toLocaleString();
+            },
+            scrollTrigger: {
+              trigger: ".card-1",
+              start: "top 86%",
+              toggleActions: "play none none reset",
+            },
+          });
+        }
+
+        // Progress bars (mobile)
+        savingsGoals.forEach((goal, i) => {
+          gsap.to(`.progress-bar-${i}`, {
+            width: `${goal.pct}%`,
+            duration: 1.1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: ".progress-bars",
+              start: "top 90%",
+              toggleActions: "play none none reset",
+            },
+          });
+        });
+
+        // ── Card 2 ──────────────────────────────────────────────────
+        gsap.from(".card-2", {
+          y: 50,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          delay: 0.1,
+          scrollTrigger: {
+            trigger: ".card-grid",
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        });
+
+        // Received counter (mobile)
+        if (receivedEl) {
+          const p3 = { v: 0 };
+          gsap.to(p3, {
+            v: 19682,
+            duration: 1.5,
+            ease: "power2.out",
+            onUpdate() {
+              receivedEl.textContent = Math.floor(p3.v).toLocaleString();
+            },
+            scrollTrigger: {
+              trigger: ".card-2",
+              start: "top 80%",
+              toggleActions: "play none none reset",
+            },
+          });
+        }
+
+        // Transfer elements simple fade-in (mobile)
+        gsap.from([".transfer-from", ".arrow-wrap", ".transfer-to"], {
+          y: 20,
+          opacity: 0,
+          duration: 0.7,
+          stagger: 0.1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: ".card-2",
+            start: "top 82%",
+            toggleActions: "play none none reverse",
+          },
+        });
+
+        // ── Stats strip (mobile) ─────────────────────────────────────
         gsap.from(".stat-card", {
           y: 40,
           opacity: 0,
+          scale: 0.95,
           duration: 0.8,
           stagger: 0.1,
-          ease: "power3.out",
+          ease: "back.out(1.3)",
           scrollTrigger: {
             trigger: ".stats-strip",
             start: "top 90%",
@@ -637,7 +762,29 @@ export function AboutSection() {
           },
         });
 
-        return () => mm.revert();
+        // Stat counters (mobile) — individual triggers, toggleActions reset
+        stats.forEach(({ raw, prefix, suffix, decimals }, i) => {
+          const el = document.querySelector<HTMLElement>(`.stat-val-${i}`);
+          if (!el) return;
+          const p = { v: 0 };
+          gsap.to(p, {
+            v: raw,
+            duration: 1.6,
+            ease: "power2.out",
+            onUpdate() {
+              el.textContent = prefix + p.v.toFixed(decimals) + suffix;
+            },
+            scrollTrigger: {
+              trigger: ".stats-strip",
+              start: "top 88%",
+              toggleActions: "play none none reset",
+            },
+          });
+        });
+
+        return () => {
+          mm.revert();
+        };
       });
     },
     { scope: sectionRef }
@@ -650,7 +797,6 @@ export function AboutSection() {
     >
       {/* ── Background ── */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
-        {/* Grid */}
         <div className="about-grid-bg absolute inset-0 opacity-[0.02]">
           <svg width="100%" height="100%">
             <defs>
@@ -672,23 +818,21 @@ export function AboutSection() {
           </svg>
         </div>
 
-        {/* Orbs */}
         <div
           className="about-orb-right absolute top-1/3 right-0 -translate-y-1/2 w-[480px] h-[480px] rounded-full opacity-[0.07]"
           style={{
             background:
-              "radial-gradient(circle, rgba(201,168,76,0.18) 0%, transparent 65%)",
+              "radial-gradient(circle,rgba(201,168,76,0.18) 0%,transparent 65%)",
           }}
         />
         <div
           className="about-orb-left absolute bottom-0 left-1/4 w-[300px] h-[300px] rounded-full opacity-[0.05]"
           style={{
             background:
-              "radial-gradient(circle, rgba(201,168,76,0.14) 0%, transparent 65%)",
+              "radial-gradient(circle,rgba(201,168,76,0.14) 0%,transparent 65%)",
           }}
         />
 
-        {/* Particles */}
         {[
           { l: "5%", t: "15%" },
           { l: "12%", t: "70%" },
@@ -712,7 +856,6 @@ export function AboutSection() {
           />
         ))}
 
-        {/* Diagonal lines */}
         <svg className="absolute inset-0 w-full h-full">
           <line
             x1="0"
@@ -739,14 +882,14 @@ export function AboutSection() {
           style={{
             height: "100%",
             background:
-              "linear-gradient(90deg, transparent, rgba(201,168,76,0.2) 30%, rgba(201,168,76,0.35) 50%, rgba(201,168,76,0.2) 70%, transparent)",
+              "linear-gradient(90deg,transparent,rgba(201,168,76,0.2) 30%,rgba(201,168,76,0.35) 50%,rgba(201,168,76,0.2) 70%,transparent)",
           }}
         />
         <div
           className="about-top-shimmer absolute inset-y-0 w-1/4"
           style={{
             background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
+              "linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)",
           }}
         />
       </div>
@@ -767,7 +910,7 @@ export function AboutSection() {
             </div>
             <h2
               className="about-headline font-serif text-5xl sm:text-6xl lg:text-7xl leading-[1.05] text-[#F0EDE8]"
-              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+              style={{ fontFamily: "'Cormorant Garamond',serif" }}
             >
               One platform.
               <br />
@@ -784,7 +927,7 @@ export function AboutSection() {
               className="about-divider mt-6 h-px"
               style={{
                 background:
-                  "linear-gradient(90deg, rgba(201,168,76,0.25), rgba(201,168,76,0.08), transparent)",
+                  "linear-gradient(90deg,rgba(201,168,76,0.25),rgba(201,168,76,0.08),transparent)",
                 width: 0,
                 opacity: 0,
               }}
@@ -794,37 +937,34 @@ export function AboutSection() {
 
         {/* Cards */}
         <div className="card-grid grid md:grid-cols-2 gap-6 lg:gap-8">
-          {/* ── Card 1: Grow Savings ── */}
+          {/* Card 1 — Grow Savings */}
           <div
             className="card card-1 bg-[#111113] border border-[#2A2A2E] rounded-3xl p-7 md:p-8 min-h-[480px] md:min-h-[540px] flex flex-col justify-between relative overflow-hidden"
             style={{
               boxShadow:
-                "0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.02)",
+                "0 20px 60px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.02)",
               transformStyle: "preserve-3d",
             }}
           >
-            {/* Inner glow follows mouse on desktop */}
             <div
               className="card-inner-glow absolute inset-0 opacity-0 pointer-events-none rounded-3xl"
               style={{
                 background:
-                  "radial-gradient(500px circle at 50% 50%, rgba(201,168,76,0.07), transparent 60%)",
+                  "radial-gradient(500px circle at 50% 50%,rgba(201,168,76,0.07),transparent 60%)",
               }}
             />
-
-            {/* Top shimmer on hover */}
             <div
               className="absolute top-0 left-0 right-0 h-px opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(90deg, transparent, rgba(201,168,76,0.4) 50%, transparent)",
+                  "linear-gradient(90deg,transparent,rgba(201,168,76,0.4) 50%,transparent)",
               }}
             />
 
             <div className="card-1-header flex items-start justify-between mb-2">
               <h3
                 className="font-serif text-3xl md:text-4xl text-[#F0EDE8] leading-tight"
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                style={{ fontFamily: "'Cormorant Garamond',serif" }}
               >
                 Grow savings
                 <br />
@@ -839,11 +979,10 @@ export function AboutSection() {
               AI-powered goals that adapt to your income patterns in real time.
             </p>
 
-            {/* Ring + stats */}
+            {/* Ring */}
             <div className="ring-section my-5 flex items-center gap-6 md:gap-8">
               <div className="relative w-28 h-28 md:w-32 md:h-32 flex-shrink-0">
                 <svg viewBox="0 0 128 128" className="w-full h-full -rotate-90">
-                  {/* Track rings */}
                   <circle
                     cx="64"
                     cy="64"
@@ -852,7 +991,6 @@ export function AboutSection() {
                     stroke="#1A1A1E"
                     strokeWidth="8"
                   />
-                  {/* Animated outer ring */}
                   <circle
                     className="ring-outer"
                     cx="64"
@@ -882,9 +1020,9 @@ export function AboutSection() {
                     stroke="#C9A84C"
                     strokeWidth="4"
                     strokeLinecap="round"
+                    opacity="0.4"
                     strokeDasharray={innerCircumference}
                     strokeDashoffset={innerCircumference}
-                    opacity="0.4"
                   />
                 </svg>
                 <div
@@ -893,7 +1031,7 @@ export function AboutSection() {
                 >
                   <span
                     className="ring-pct font-serif text-2xl md:text-3xl text-[#F0EDE8]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    style={{ fontFamily: "'Cormorant Garamond',serif" }}
                   >
                     0%
                   </span>
@@ -910,7 +1048,7 @@ export function AboutSection() {
                   </p>
                   <p
                     className="total-saved-num font-serif text-3xl md:text-4xl text-[#F0EDE8] leading-none"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    style={{ fontFamily: "'Cormorant Garamond',serif" }}
                   >
                     $0
                   </p>
@@ -955,7 +1093,7 @@ export function AboutSection() {
                       style={{
                         width: "0%",
                         background:
-                          "linear-gradient(90deg, rgba(201,168,76,0.4), #C9A84C)",
+                          "linear-gradient(90deg,rgba(201,168,76,0.4),#C9A84C)",
                       }}
                     />
                   </div>
@@ -964,12 +1102,12 @@ export function AboutSection() {
             </div>
           </div>
 
-          {/* ── Card 2: Send Globally ── */}
+          {/* Card 2 — Send Globally */}
           <div
             className="card card-2 bg-[#111113] border border-[#2A2A2E] rounded-3xl p-7 md:p-8 min-h-[480px] md:min-h-[540px] flex flex-col justify-between relative overflow-hidden"
             style={{
               boxShadow:
-                "0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.02)",
+                "0 20px 60px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.02)",
               transformStyle: "preserve-3d",
             }}
           >
@@ -977,14 +1115,14 @@ export function AboutSection() {
               className="card-inner-glow absolute inset-0 opacity-0 pointer-events-none rounded-3xl"
               style={{
                 background:
-                  "radial-gradient(500px circle at 50% 50%, rgba(201,168,76,0.07), transparent 60%)",
+                  "radial-gradient(500px circle at 50% 50%,rgba(201,168,76,0.07),transparent 60%)",
               }}
             />
 
             <div className="card-2-header flex items-start justify-between mb-2">
               <h3
                 className="font-serif text-3xl md:text-4xl text-[#F0EDE8] leading-tight"
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                style={{ fontFamily: "'Cormorant Garamond',serif" }}
               >
                 Send across
                 <br />
@@ -999,9 +1137,8 @@ export function AboutSection() {
               Real mid-market rates. Zero hidden fees. Settles in seconds.
             </p>
 
-            {/* Transfer UI */}
             <div className="my-5 flex-1 flex flex-col justify-center">
-              {/* From box */}
+              {/* From */}
               <div
                 className="transfer-from bg-[#0A0A0B] border border-[#2A2A2E] rounded-2xl p-5 mb-3 relative overflow-hidden"
                 style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)" }}
@@ -1015,7 +1152,7 @@ export function AboutSection() {
                 </div>
                 <p
                   className="font-serif text-3xl md:text-4xl text-[#F0EDE8]"
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  style={{ fontFamily: "'Cormorant Garamond',serif" }}
                 >
                   25,000<span className="text-[#5A5855] text-xl">.00</span>
                 </p>
@@ -1042,7 +1179,7 @@ export function AboutSection() {
                 </div>
               </div>
 
-              {/* To box */}
+              {/* To */}
               <div
                 className="transfer-to rounded-2xl p-5 mt-3 border"
                 style={{
@@ -1063,7 +1200,7 @@ export function AboutSection() {
                 </div>
                 <p
                   className="font-serif text-3xl md:text-4xl text-[#C9A84C]"
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  style={{ fontFamily: "'Cormorant Garamond',serif" }}
                 >
                   <span className="received-amount">0</span>
                   <span className="text-[#C9A84C]/50 text-xl">.50</span>
@@ -1071,7 +1208,7 @@ export function AboutSection() {
               </div>
             </div>
 
-            {/* Rate details */}
+            {/* Rates */}
             <div className="border-t border-[#1A1A1E] pt-5 space-y-3 text-xs">
               {transferRates.map(({ label, value, highlight }) => (
                 <div key={label} className="rate-row-item flex justify-between">
@@ -1095,9 +1232,9 @@ export function AboutSection() {
 
         {/* Stats strip */}
         <div className="stats-strip grid grid-cols-3 gap-4 md:gap-6 mt-8 md:mt-12">
-          {stats.map(({ stat, sub, sup }, i) => (
+          {stats.map(({ prefix, suffix, decimals, sub, sup }, i) => (
             <div
-              key={stat}
+              key={i}
               className="stat-card bg-[#111113] border border-[#2A2A2E] rounded-2xl px-4 py-5 md:px-6 md:py-6 flex flex-col gap-1 cursor-default"
               style={{
                 boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
@@ -1109,9 +1246,9 @@ export function AboutSection() {
               </span>
               <span
                 className={`stat-val-${i} font-serif text-2xl md:text-3xl text-[#F0EDE8]`}
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                style={{ fontFamily: "'Cormorant Garamond',serif" }}
               >
-                0
+                {prefix + (0).toFixed(decimals) + suffix}
               </span>
               <span className="font-sans text-xs md:text-sm text-[#9E9B95]">
                 {sub}
